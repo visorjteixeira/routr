@@ -372,6 +372,7 @@ async function peerToPSTN(
 ): Promise<Route> {
   const numberTel = E.getHeaderValue(req, CT.ExtraHeader.DOD_NUMBER)
   const privacy = E.getHeaderValue(req, CT.ExtraHeader.DOD_PRIVACY)
+  const dodUri = E.getHeaderValue(req, CT.ExtraHeader.DOD_URI)
   const number = await findNumberByTelUrl(apiClient, `tel:${numberTel}`)
 
   if (!number) {
@@ -383,8 +384,10 @@ async function peerToPSTN(
     throw new Error(`no trunk associated with Number ref: ${number.ref}`)
   }
 
+  const index = number.trunk.uris.findIndex((uri) => uri.host === (dodUri || ""));
+
   const via = req.message.via[0]
-  const uri = getTrunkURI(number.trunk)
+  const uri = getTrunkURI(number.trunk, index === -1 ? 0 : index)
 
   return {
     user: uri.user,

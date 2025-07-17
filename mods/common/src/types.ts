@@ -68,7 +68,8 @@ export enum ExtraHeader {
   DOD_NUMBER = "X-DOD-Number",
   DOD_PRIVACY = "X-DOD-Privacy",
   CONNECT_TOKEN = "X-Connect-Token",
-  CALL_DIRECTION = "X-Call-Direction"
+  CALL_DIRECTION = "X-Call-Direction",
+  DOD_URI = "X-DOD-URI"
 }
 
 export enum Privacy {
