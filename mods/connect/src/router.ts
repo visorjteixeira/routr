@@ -387,6 +387,10 @@ async function peerToPSTN(
     throw new Error(`no trunk associated with Number ref: ${number.ref}`)
   }
 
+  console.log("dodUri", dodUri)
+  console.log("dodTransport", dodTransport)
+  console.log("dodPort", dodPort)
+
   const via = req.message.via[0]
   const uri =
     dodUri && dodTransport && dodPort
