@@ -376,13 +376,17 @@ async function peerToPSTN(
   const dodTransport = E.getHeaderValue(req, CT.ExtraHeader.DOD_TRANSPORT)
   const dodPort = E.getHeaderValue(req, CT.ExtraHeader.DOD_PORT)
 
-  const number = await findNumberByTelUrl(apiClient, `tel:${numberTel}`)
+  const isDod = dodUri && dodTransport && dodPort
 
-  if (!number) {
+  const number = isDod
+    ? null
+    : await findNumberByTelUrl(apiClient, `tel:${numberTel}`)
+
+  if (!number && !isDod) {
     throw new Error(`no Number found for tel: ${numberTel}`)
   }
 
-  if (!number.trunk) {
+  if (!number.trunk && !isDod) {
     // TODO: Create custom error
     throw new Error(`no trunk associated with Number ref: ${number.ref}`)
   }
@@ -392,15 +396,14 @@ async function peerToPSTN(
   console.log("dodPort", dodPort)
 
   const via = req.message.via[0]
-  const uri =
-    dodUri && dodTransport && dodPort
-      ? {
-          user: "Visor",
-          host: dodUri,
-          port: Number(dodPort),
-          transport: dodTransport as CT.Transport
-        }
-      : getTrunkURI(number.trunk)
+  const uri = isDod
+    ? {
+        user: "Visor",
+        host: dodUri,
+        port: Number(dodPort),
+        transport: dodTransport as CT.Transport
+      }
+    : getTrunkURI(number.trunk)
 
   return {
     user: uri.user,
@@ -427,9 +430,27 @@ async function peerToPSTN(
             : CT.Privacy.NONE.toLowerCase(),
         action: CT.HeaderModifierAction.ADD
       },
-      createRemotePartyId(number.trunk, number),
-      createPAssertedIdentity(req, number.trunk, number),
-      await createTrunkAuthentication(number.trunk)
+      isDod
+        ? {
+            name: "Remote-Party-ID",
+            value: `<sip:${numberTel}@${dodUri}>;screen=yes;party=calling`,
+            action: CT.HeaderModifierAction.ADD
+          }
+        : createRemotePartyId(number.trunk, number),
+      isDod
+        ? {
+            name: "P-Asserted-Identity",
+            value: `Visor <sip:${numberTel}@${dodUri};user=phone>`,
+            action: CT.HeaderModifierAction.ADD
+          }
+        : createPAssertedIdentity(req, number.trunk, number),
+      isDod
+        ? {
+            name: CT.ExtraHeader.GATEWAY_AUTH,
+            value: Buffer.from(`Visor:${dodUri}`).toString("base64"),
+            action: CT.HeaderModifierAction.ADD
+          }
+        : await createTrunkAuthentication(number.trunk)
     ]
   }
 }
