@@ -193,7 +193,6 @@ export const createTrunkAuthentication = async (
 
 export const getTrunkURI = (
   trunk: CC.Trunk,
-  index?: number
 ): {
   host: string
   port: number
@@ -204,7 +203,7 @@ export const getTrunkURI = (
     throw new Error(`trunk ${trunk.ref} has no outbound settings`)
   }
 
-  const { user, host, port, transport } = trunk.uris[index || 0]
+  const { user, host, port, transport } = trunk.uris[0]
 
   return {
     user,
