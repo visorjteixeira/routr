@@ -386,7 +386,7 @@ async function peerToPSTN(
     throw new Error(`no Number found for tel: ${numberTel}`)
   }
 
-  if (!number.trunk && !isDod) {
+  if (!number?.trunk && !isDod) {
     // TODO: Create custom error
     throw new Error(`no trunk associated with Number ref: ${number.ref}`)
   }
