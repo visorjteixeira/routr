@@ -97,7 +97,7 @@ export const registrationRequestInputFromTrunk = (
   return {
     trunkRef: trunk.ref,
     user: uri.user,
-    targetDomain: uri.host,
+    targetDomain: trunk.inboundUri,
     targetAddress: `${uri.host}:${uri.port}`,
     // TODO: Find closest edgeport instead of [0]
     proxyAddress: config.edgePorts[0].address,
